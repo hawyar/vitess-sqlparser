@@ -10,22 +10,14 @@ import (
 )
 
 type Payload struct {
+	Type string `json:"type"` // type of stmt given
 	Data string `json:"data"`
 	Err  string `json:"err"`
 }
 
-type Create struct {
-	Table   string            `json:"table"`
-	Columns map[string]string `json:"columns"`
-}
-
 func main() {
 
-	p := Payload{
-		Data: "",
-		Err:  "",
-	}
-
+	p := Payload{}
 	var destination string
 
 	flag.StringVar(&destination, "d", "destination", "Speciify location of output")
@@ -58,20 +50,26 @@ func main() {
 
 	switch stmt.(type) {
 	case *sqlparser.DDL:
+		p.Type = "DDL"
 		stdout(stmt)
 	case *sqlparser.Select:
+		p.Type = "Select"
 		p.Data = string(beep)
 		stdout(p)
 	case *sqlparser.Insert:
+		p.Type = "Insert"
 		p.Data = string(beep)
 		stdout(p)
 	case *sqlparser.Update:
+		p.Type = "Update"
 		p.Data = string(beep)
 		stdout(p)
 	case *sqlparser.Delete:
+		p.Type = "Delete"
 		p.Data = string(beep)
 		stdout(p)
 	case *sqlparser.CreateTable:
+		p.Type = "CreateTable"
 		p.Data = string(beep)
 		stdout(p)
 	}
