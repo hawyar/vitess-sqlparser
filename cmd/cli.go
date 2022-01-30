@@ -4,9 +4,8 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"os"
-
 	"github.com/blastrain/vitess-sqlparser/sqlparser"
+	"os"
 )
 
 type Payload struct {
@@ -18,13 +17,11 @@ type Payload struct {
 func main() {
 
 	p := Payload{}
-	var destination string
 
-	flag.StringVar(&destination, "d", "destination", "Speciify location of output")
 	flag.Parse()
 
 	if len(os.Args) < 2 {
-		p.Err = "No query specified"
+		p.Err = "empty-query"
 		stdout(p)
 		os.Exit(1)
 	}
@@ -35,44 +32,14 @@ func main() {
 		p.Err = `Given empty string, please provide a valid statement`
 	}
 
-	stmt, err := sqlparser.Parse(given)
+	tree, err := sqlparser.Parse(given)
 
 	if err != nil {
 		p.Err = err.Error()
 		stdout(p)
 		os.Exit(1)
 	}
-
-	beep, err := json.Marshal(stmt)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	switch stmt.(type) {
-	case *sqlparser.DDL:
-		p.Type = "DDL"
-		stdout(stmt)
-	case *sqlparser.Select:
-		p.Type = "Select"
-		p.Data = string(beep)
-		stdout(p)
-	case *sqlparser.Insert:
-		p.Type = "Insert"
-		p.Data = string(beep)
-		stdout(p)
-	case *sqlparser.Update:
-		p.Type = "Update"
-		p.Data = string(beep)
-		stdout(p)
-	case *sqlparser.Delete:
-		p.Type = "Delete"
-		p.Data = string(beep)
-		stdout(p)
-	case *sqlparser.CreateTable:
-		p.Type = "CreateTable"
-		p.Data = string(beep)
-		stdout(p)
-	}
+	stdout(tree)
 }
 
 func stdout(v interface{}) {
